@@ -4,13 +4,17 @@
 // the packages
 // ---------------------------------------------------------------------------------------------------------------------
 var express = require('express');
-// var bodyParser = require('body-parser');
+var compress = require('compression');
+var bodyParser = require('body-parser');
+var methodOverride = require('method-override');
 // var morgan = require('morgan');
 var mongoose = require('mongoose');
 mongoose.Promise = global.Promise
 var restify = require('express-restify-mongoose');
 // var opbeat = require('opbeat').start();
-// var cors = require('cors');
+var cors = require('cors');
+var favicon = require('serve-favicon');
+var path = require('path');
 var app = express();
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -20,17 +24,25 @@ var port = process.env.PORT || 6080;
 var mongouri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017';
 var env = process.env.NODE_ENV || 'development';
 
+var hour = 3600000;
+var day = hour * 24;
+var week = day * 7;
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // config app
 app.set('port', port);
+app.use(compress());
+app.use(methodOverride());
 // app.use(morgan('dev'));
 // app.use(opbeat.middleware.express());
-// app.use(cors());
+app.use(cors());
+app.use(express.static(path.join(__dirname, 'public'), {maxAge: week}));
+app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // config body parser
-// app.use(bodyParser.urlencoded({extended: true}));
-// app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.json());
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // MONGOOSE
@@ -81,7 +93,6 @@ connect()
     .on('disconnected', connect)
     .once('open', listen)
 ;
-
 
 function listen() {
     //if (app.get('env') === 'test') return;
